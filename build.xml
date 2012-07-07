@@ -1,0 +1,55 @@
+<project name="IMDb-java" basedir="." default="jar">
+
+	<property name="src.dir"     value="src"/>
+	<property name="lib.dir"     value="lib"/>
+	<property name="build.dir"   value="build"/>
+	<property name="classes.dir" value="${build.dir}/classes"/>
+	<property name="jar.dir" value="${build.dir}/jar"/>
+	<property name="doc.dir" value="${build.dir}/doc" />
+	
+	
+	<path id="libclasspath">
+		<fileset dir="${lib.dir}" includes="**/*.jar"/>
+	</path>
+	
+<target name="clean">
+	<delete dir="${build.dir}"/>
+</target>
+	
+<target name="compile" depends="clean">
+	<antcall target="javadoc" />
+	<mkdir dir="${classes.dir}"/>
+	
+	<unzip dest="tmp/lib">
+        <fileset dir="${lib.dir}">
+            <include name="**/*.jar" />
+        </fileset>
+		
+		<patternset>
+			<include name="**/*.class"/>
+		</patternset>
+    </unzip>
+	
+	<javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="libclasspath"/>
+</target>
+
+<target name="jar" depends="compile">
+
+	<mkdir dir="${jar.dir}"/>
+	
+	<jar destfile="${jar.dir}/${ant.project.name}.jar" basedir="${classes.dir}">
+		<fileset dir="tmp/lib" />
+	</jar>
+	<delete dir="tmp" />
+</target>
+
+<target name="javadoc">
+	<mkdir dir="${doc.dir}" />
+
+	<javadoc destdir="${doc.dir}" author="true" version="true">
+		<fileset dir="${src.dir}" />
+	</javadoc>
+</target>
+
+
+</project>

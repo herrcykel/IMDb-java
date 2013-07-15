@@ -28,7 +28,7 @@ public class ParseHandler {
 		if(!Pattern.compile("^tt\\d+$", Pattern.CASE_INSENSITIVE).matcher(id).matches()) {
 			throw new IllegalArgumentException(String.format("Bad ID \"%s\" supplied.", id));
 		}
-		
+
 		this.doc = createDoc(id);
 		Title t;
 		TitleParser tp = new TitleParser(doc);
@@ -57,32 +57,17 @@ public class ParseHandler {
 	}
 	
 	public String getIdByName(String name) throws IOException {
-	
-		try {
-			URL url = new URL(String.format("http://www.deanclatworthy.com/imdb/?q=%s", URLEncoder.encode(name, "UTF-8")));
-			HttpURLConnection con = (HttpURLConnection)url.openConnection();
-			StringBuilder sb = new StringBuilder();
-			BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
-			String line;
-			while((line = reader.readLine()) != null) {
-				sb.append(line);
-			}
-			reader.close();
-			String content = sb.toString();
-			try {
-				JSONObject json = new JSONObject(content);
-				if(!json.has("error")) {
-					return json.getString("imdbid");
-				}
-				
-			} catch (JSONException e) { }
-		} catch (IOException e) {
-			throw new IOException("Could not connect. Try again later");
-		}
-
-		
-		
-		return null;
+        URL url = new URL(String.format("http://www.imdb.com/find?q=%s&s=tt", URLEncoder.encode(name, "UTF-8")));
+        Document doc = createDoc(url);
+        Elements els = doc.select(".findResult .result_text a");
+        if(els.size() > 0) {
+            String titleHref = els.get(0).attr("href");
+            Matcher m = Pattern.compile("tt\\d+", Pattern.CASE_INSENSITIVE).matcher(titleHref);
+            if(m.find()) {
+                return m.group();
+            }
+        }
+        return null;
 	}
 	
 	//Returns an array containing IMDb IDs for all episodes of the specified season
@@ -170,7 +155,7 @@ public class ParseHandler {
             }
             String json = builder.toString();
             reader.close();
-            System.out.print(json);
+
             Matcher m = Pattern.compile("\\{.*}").matcher(json);
             if(m.find()) {
                 json = m.group();
@@ -194,31 +179,24 @@ public class ParseHandler {
 	}
 	
 	private static Document createDoc(String id) throws IOException {
-		try {
-			return Jsoup.connect(String.format("http://imdb.com/title/%s", id))
-					.timeout(5000)
-					.ignoreHttpErrors(true)
-					.header("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.162 Safari/535.19")
-					.get();
-
-			
-		} catch (Exception e) {
-			throw new IOException("Could not connect. Try again later");
-		}
+		return createDoc(new URL(String.format("http://imdb.com/title/%s", id)));
 	}
 	private static Document createDoc(String id, int season) throws IOException {
+        return createDoc(new URL(String.format("http://imdb.com/title/%s/episodes?season=%s", id, season)));
+    }
 
-		try {
-			return Jsoup.connect(String.format("http://imdb.com/title/%s/episodes?season=%s", id, season))
-					.timeout(5000)
-					.ignoreHttpErrors(true)
-					.header("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.162 Safari/535.19")
-					.get();
-			
-		} catch (IOException e) {
-			throw new IOException("Could not connect. Try again later");
-		}
-	}
+    private static Document createDoc(URL url) throws IOException {
+        try {
+            return Jsoup.connect(url.toString())
+                    .timeout(5000)
+                    .ignoreHttpErrors(true)
+                    .header("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.162 Safari/535.19")
+                    .get();
+
+        } catch (IOException e) {
+            throw new IOException("Could not connect. Try again later");
+        }
+    }
 	
 
 	

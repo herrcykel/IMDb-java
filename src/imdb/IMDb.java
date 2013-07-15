@@ -40,6 +40,10 @@ public class IMDb {
 		}
 		return null;
 	}
+
+    public String[] getSearchSuggestions(String query) throws Exception {
+        return ParseHandler.getSuggestions(query);
+    }
 	
 
 }

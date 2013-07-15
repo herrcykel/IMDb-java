@@ -14,6 +14,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -84,8 +85,8 @@ public class ParseHandler {
 		return null;
 	}
 	
-	
-	public static String[] parseSeasonPage(String showId, int season) throws IOException {
+	//Returns an array containing IMDb IDs for all episodes of the specified season
+	protected static String[] parseSeasonPage(String showId, int season) throws IOException {
 		String[] ret;
 		Document doc = createDoc(showId, season);
 		Elements descs = doc.getElementsByAttributeValue("itemprop", "description");
@@ -141,64 +142,55 @@ public class ParseHandler {
 
 	}
 	
-	public static String[] getSuggestions(String query) {
-		try {
-			URL url = new URL(String.format("http://sg.media-imdb.com/suggests/i/%s.json", URLEncoder.encode(query, "UTF-8")));
-			HttpURLConnection con = (HttpURLConnection)url.openConnection();
-			
-			con.setRequestProperty("Accept", "*/*");
-			con.setRequestProperty("Accept-Language", "sv-se,sv;q=0.8,en-us;q=0.5,en;q=0.3");
-			con.setRequestProperty("Accept-Encoding", "gzip, deflate");
-			con.setRequestProperty("Accept-Charset", "ISO-8859-1,utf-8;q=0.7,*;q=0.7");
-			con.setRequestProperty("Keep-Alive", "115");
-			con.setRequestProperty("Connection", "keep-alive");
-			con.setRequestProperty("Referer", "http://www.imdb.com/");
-	
-			if(con.getResponseCode() != HttpURLConnection.HTTP_OK) {
-				System.err.println(":( --> " + con.getResponseCode() + ": " + con.getResponseMessage());
-				return null;
-			}
-			System.out.println("N1");
-			
-			
-			BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
-			StringBuilder builder = new StringBuilder();
-			String line;
-			while((line = reader.readLine()) != null) {
-				builder.append(line);
-			}
-			String json = builder.toString();
-			reader.close();
-			
-			Matcher m = Pattern.compile("\\{.*}").matcher(json);
-			if(!m.find())
-				return null;
-			
-			json = m.group();
-			
-			String[] suggestions = null;
-	
-			JSONObject jo = new JSONObject(json);
-			JSONArray ja = jo.getJSONArray("d");
-			suggestions = new String[ja.length()];
-			for (int i = 0; i < ja.length(); i++) {
-				// ID ja.getJSONObject(i).getString("id")
-				String name = ja.getJSONObject(i).getString("l"),
-						id = ja.getJSONObject(i).getString("id");
-				
-				suggestions[i] = name;
-				System.out.println(name + " [ " + id + " ]");
-	
-			}
-			return suggestions;
-		}
-		catch (Exception e) {
-			System.err.println("ImdbParser#getSuggestions");
-			e.printStackTrace();
-			return null;
-		}
+	public static String[] getSuggestions(String query) throws Exception {
+        ArrayList<String> suggestions = new ArrayList<String>();
 
-		
+        query = query.trim().replace(" ", "_");
+
+        //IMDb seems to have a length restriction on search suggestions querys ( http://sg.media-imdb.com/suggests/t/the_ame.json -> 200, http://sg.media-imdb.com/suggests/t/the_amer.json -> 403 )
+        final int MAX_QUERY_LENGTH = 7;
+        if(query.length() > MAX_QUERY_LENGTH) {
+            query = query.substring(0, MAX_QUERY_LENGTH);
+        }
+
+        URL url = new URL(String.format("http://sg.media-imdb.com/suggests/%s/%s.json", query.charAt(0), URLEncoder.encode(query, "UTF-8")));
+
+        HttpURLConnection con = (HttpURLConnection)url.openConnection();
+
+        con.setRequestProperty("Accept", "*/*");
+        con.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.72 Safari/537.36");
+
+        if(con.getResponseCode() == HttpURLConnection.HTTP_OK) {
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            StringBuilder builder = new StringBuilder();
+            String line;
+            while((line = reader.readLine()) != null) {
+                builder.append(line);
+            }
+            String json = builder.toString();
+            reader.close();
+            System.out.print(json);
+            Matcher m = Pattern.compile("\\{.*}").matcher(json);
+            if(m.find()) {
+                json = m.group();
+
+                JSONObject jo = new JSONObject(json);
+                JSONArray ja = jo.getJSONArray("d");
+
+                suggestions.ensureCapacity(ja.length());
+
+                for (int i = 0; i < ja.length(); i++) {
+                    // ID ja.getJSONObject(i).getString("id")
+                    String name = ja.getJSONObject(i).getString("l");
+
+                    suggestions.add(name);
+                }
+
+            }
+        }
+        return suggestions.toArray(new String[suggestions.size()]);
+
 	}
 	
 	private static Document createDoc(String id) throws IOException {

@@ -1,14 +1,11 @@
 package imdb.parser;
 
 
-
-
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-
-import javax.imageio.ImageIO;
 
 
 
@@ -125,18 +122,21 @@ public abstract class Title {
 		System.out.printf("Voting users: %s\n", this.getVotingUsers() != -1 ? this.getVotingUsers() : "N/A");
 		String[] genres = this.getGenres();
 		
-		System.out.printf("Genres: %s", (genres != null ? genres[0] : "N/A"));
+		System.out.print("Genres: ");
 		if(genres != null) {
-			
+			System.out.print(genres[0]);
 			for (int i = 1; i < genres.length; i++) {
 				System.out.printf(", %s", genres[i]);
 			}
 		}
+        else {
+            System.out.print("N/A");
+        }
 		System.out.println();
 		System.out.println("Type: " + this.getTypeName());
 		System.out.printf("Desc: \"%s\"\n", this.getDescription() != null ? this.getDescription() : "N/A");
 		System.out.printf("Plot Summary: \"%s\"\n", this.getPlotSummary() != null ? this.getPlotSummary() : "N/A");
-		
+
 	}*/
 	
 	

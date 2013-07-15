@@ -26,7 +26,7 @@ public class TVShow extends Title {
 		if(this.seasonCache.get(season).length < episode) {
 			return null;
 		}
-		return (Episode)IMDb.getImdb().getById(this.seasonCache.get(season)[episode - 1]);
+		return (Episode)IMDb.getInstance().getById(this.seasonCache.get(season)[episode - 1]);
 
 	}
 	public int getEpisodeCount(int season) throws IOException {

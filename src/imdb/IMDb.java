@@ -10,7 +10,7 @@ import java.io.IOException;
 public class IMDb {
 	private static final IMDb instance = new IMDb();
 	private IMDb() {}
-	public static IMDb getImdb() {
+	public static IMDb getInstance() {
 		return instance;
 	}
 	

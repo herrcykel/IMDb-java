@@ -1,12 +1,12 @@
 package imdb.parser;
 
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 class TitleParser {
 	private Document doc;
@@ -79,7 +79,7 @@ class TitleParser {
 
 	private int getYear() {
 		try {
-			String t = doc.getElementsByAttributeValue("itemprop", "name").get(0).text();
+			String t = doc.getElementsByAttributeValue("itemprop", "name").get(0).nextElementSibling().text();
 			Matcher m = Pattern.compile("\\(.*?(\\d{4})").matcher(t);
 			if(m.find()) {
 				return Integer.valueOf(m.group(1));
@@ -131,25 +131,14 @@ class TitleParser {
 	}
 	
 	private String getPlotSummary() {
-		Elements h2s = doc.getElementsByTag("h2");
-		Element storyLineH2 = null;
-		for (int i = 0; i < h2s.size(); i++) {
-			if(h2s.get(i).text().toLowerCase().equals("storyline")) {
-				if(!h2s.get(i).nextElementSibling().hasClass("see-more")) {
-					storyLineH2 = h2s.get(i);
-				}
-				break;
-			}
-		}
-		
-		if(storyLineH2 == null) {
-			return null;
-		}
-		if(storyLineH2.nextElementSibling().children().size() > 0) {
-			storyLineH2.nextElementSibling().children().remove();
-		}
-		// 160 = &nbsp;
-		return storyLineH2.nextElementSibling().text().replace(String.valueOf((char)160), "").trim();
+        Element e1 = doc.getElementById("titleStoryLine");
+        if(e1 != null) {
+            Element e2 = e1.getElementsByAttributeValue("itemprop", "description").get(0);
+            Element e3 = e2.child(0);
+            e3.children().remove();
+            return e3.text();
+        }
+        return null;
 	}
 
 }

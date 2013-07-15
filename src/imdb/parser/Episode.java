@@ -15,7 +15,7 @@ public class Episode extends Video {
 	}
 	
 	public TVShow getShow() throws IOException {
-		return (TVShow)IMDb.getImdb().getById(this.showId);
+		return (TVShow)IMDb.getInstance().getById(this.showId);
 	}
 	
 	public int getSeason() {

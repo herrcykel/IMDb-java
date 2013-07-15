@@ -1,6 +1,12 @@
 package imdb.parser;
 
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,13 +16,6 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
 
 
 public class ParseHandler {
@@ -156,7 +155,7 @@ public class ParseHandler {
 			con.setRequestProperty("Referer", "http://www.imdb.com/");
 	
 			if(con.getResponseCode() != HttpURLConnection.HTTP_OK) {
-				System.err.println("loooooooooool :( --> " + con.getResponseCode() + ": " + con.getResponseMessage());
+				System.err.println(":( --> " + con.getResponseCode() + ": " + con.getResponseMessage());
 				return null;
 			}
 			System.out.println("N1");

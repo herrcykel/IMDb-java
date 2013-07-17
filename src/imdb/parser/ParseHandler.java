@@ -127,7 +127,7 @@ public class ParseHandler {
 
 	}
 	
-	public static String[] getSuggestions(String query) throws Exception {
+	public String[] getSuggestions(String query) throws Exception {
         ArrayList<String> suggestions = new ArrayList<String>();
 
         query = query.trim().replace(" ", "_");

@@ -42,7 +42,7 @@ public class IMDb {
 	}
 
     public String[] getSearchSuggestions(String query) throws Exception {
-        return ParseHandler.getSuggestions(query);
+        return this.ph.getSuggestions(query);
     }
 	
 

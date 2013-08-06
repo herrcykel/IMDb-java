@@ -130,15 +130,15 @@ public class ParseHandler {
 	public String[] getSuggestions(String query) throws Exception {
         ArrayList<String> suggestions = new ArrayList<String>();
 
-        query = query.trim().replace(" ", "_");
+        //IMDb seems to have a length restriction of 6 on search suggestion querys, not including spaces
 
-        //IMDb seems to have a length restriction on search suggestions querys ( http://sg.media-imdb.com/suggests/t/the_ame.json -> 200, http://sg.media-imdb.com/suggests/t/the_amer.json -> 403 )
-        final int MAX_QUERY_LENGTH = 7;
-        if(query.length() > MAX_QUERY_LENGTH) {
-            query = query.substring(0, MAX_QUERY_LENGTH);
+        final int MAX_QUERY_LENGTH = 6;
+        while((query = query.trim()).replace(" ", "").length() > MAX_QUERY_LENGTH) {
+            query = query.substring(0, query.length() - 1);
         }
+        query = query.replace(' ', '_');
 
-        URL url = new URL(String.format("http://sg.media-imdb.com/suggests/%s/%s.json", query.charAt(0), URLEncoder.encode(query, "UTF-8")));
+        URL url = new URL(String.format("http://sg.media-imdb.com/suggests/%s/%s.json", Character.toLowerCase(query.charAt(0)), URLEncoder.encode(query.toLowerCase(), "UTF-8")));
 
         HttpURLConnection con = (HttpURLConnection)url.openConnection();
 
